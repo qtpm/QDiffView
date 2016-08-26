@@ -3,7 +3,7 @@ QDiffView
 
 Diff view widget like GitHub.
 
-![screenshot](https://raw.githubusercontent.com/qtpm/QDiffView/master/diff.png)
+.. image:: https://raw.githubusercontent.com/qtpm/QDiffView/master/diff.png
 
 Install
 --------------
