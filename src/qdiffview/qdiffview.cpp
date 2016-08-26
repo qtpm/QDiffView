@@ -24,14 +24,10 @@ QString bodyTemplate1 = "<html>\n"
                         "</head>\n"
                         "<body>\n"
                         "<table width=\"100%\" cellspacing=\"1\" cellpadding=\"3\">\n";
-
 QString bodyTemplate2 = "</table>\n"
                         "</body></html>\n";
-// QString addedTemplate = "<tr class=\"background-color: #ffecec;\"><th width=\"40\"></th><th "
-
 QString addedTemplate = "<tr class=\"al\"><th width=\"40\"></th><th "
                         "align=\"right\" width=\"40\">%1</th><td width=\"100%\">%2</td></tr>\n";
-// QString removedTemplate = "<tr style=\"background-color: #eaffea;\"><th align=\"right\" "
 QString removedTemplate = "<tr class=\"rl\"><th align=\"right\" "
                           "width=\"40\">%1</th><th width=\"40\"></th><td "
                           "width=\"100%\">%2</td></tr>\n";
@@ -90,12 +86,13 @@ void QDiffView::setSource(const QString &oldString, const QString &newString)
 
     dtl::Diff<int> linediff(oldStringIndex, newStringIndex);
     linediff.compose();
+
     dtl::edit_t last = -2;
     int oldLineNumber = 1;
     int newLineNumber = 1;
 
     for (auto ses : linediff.getSes().getSequence()) {
-        // qDebug() << ses.second.type << id2line[ses.first];
+        //qDebug() << ses.second.type << id2line[ses.first];
         Diff *diff;
         if (ses.second.type != last) {
             diff = new Diff(oldLineNumber, newLineNumber, ses.second.type);
@@ -131,8 +128,8 @@ void QDiffView::setSource(const QString &oldString, const QString &newString)
         std::vector<QChar> newChars(newString.constBegin(), newString.constEnd());
         dtl::Diff<QChar> chardiff(oldChars, newChars);
         chardiff.compose();
-        dtl::edit_t oldlast = dtl::SES_COMMON;
-        dtl::edit_t newlast = dtl::SES_COMMON;
+        auto oldlast = dtl::SES_COMMON;
+        auto newlast = dtl::SES_COMMON;
         QString oldFormatString;
         QString newFormatString;
         auto resetIfNeeded = [](dtl::edit_t &last, QString &formatString) {
@@ -169,10 +166,6 @@ void QDiffView::setSource(const QString &oldString, const QString &newString)
                     newlast = dtl::SES_ADD;
                 }
                 append(newFormatString, ses.first);
-            }
-            if (ses.first == '\n') {
-                resetIfNeeded(oldlast, oldFormatString);
-                resetIfNeeded(newlast, newFormatString);
             }
         }
         resetIfNeeded(oldlast, oldFormatString);
