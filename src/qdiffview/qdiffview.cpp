@@ -1,10 +1,11 @@
 #include "qdiffview.h"
 
-#include "private/diff.h"
-#include "private/dtl/dtl.hpp"
+#include <utility>
 #include <QDebug>
 #include <QFontDatabase>
 #include <QMap>
+#include "private/diff.h"
+#include "private/dtl/dtl.hpp"
 
 QString bodyTemplate1 = "<html>\n"
                         "<head>\n"
@@ -125,8 +126,15 @@ void QDiffView::setSource(const QString &oldString, const QString &newString)
     for (int i = 0; i < this->_diffs.length() - 1; i++) {
         auto oldDiff = this->_diffs[i];
         auto newDiff = this->_diffs[i + 1];
+        if (oldDiff->type == dtl::SES_ADD && newDiff->type == dtl::SES_DELETE) {
+            std::swap(this->_diffs[i], this->_diffs[i + 1]);
+            std::swap(oldDiff, newDiff);
+
+        }
         auto oldString = oldDiff->lines.join('\n');
-        if ((oldDiff->type == dtl::SES_DELETE && newDiff->type == dtl::SES_ADD) || (oldDiff->type == dtl::SES_ADD && newDiff->type == dtl::SES_DELETE)) {
+        if (oldDiff->type != dtl::SES_DELETE || newDiff->type != dtl::SES_ADD) {
+            oldDiff->lines = oldString.replace(' ', "&nbsp;").replace('\t', "&nbsp;&nbsp;&nbsp;&nbsp;").split('\n');
+        } else {
             i++;
             auto newString = newDiff->lines.join('\n');
             std::vector<QChar> oldChars(oldString.constBegin(), oldString.constEnd());
@@ -177,8 +185,6 @@ void QDiffView::setSource(const QString &oldString, const QString &newString)
             resetIfNeeded(newlast, newFormatString);
             oldDiff->lines = oldFormatString.split('\n');
             newDiff->lines = newFormatString.split('\n');
-        } else {
-            oldDiff->lines = oldString.replace(' ', "&nbsp;").replace('\t', "&nbsp;&nbsp;&nbsp;&nbsp;").split('\n');
         }
     }
     this->_update();
