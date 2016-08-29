@@ -12,11 +12,17 @@ QString bodyTemplate1 = "<html>\n"
                         ".text {font-weight:600;}\n"
                         "body {background-color: blue;width: 100%;}\n"
                         "table {width: 100%; }\n"
+                        "th {color: #b2b2b2;}\n"
                         ".rp {background-color: #f8cbcb;}\n"
                         ".ap {background-color: #a6f3a6;}\n"
                         ".rl {background-color: #ffecec;}\n"
+                        ".rl th {background-color: #ffdddd;}\n"
                         ".cl {background-color: #ffffff;}\n"
+                        ".cl2 {background-color: #f4f7fb;}\n"
+                        ".cl2 th {background-color: #edf2f9;}\n"
+                        ".cl2 a {text-decoration:none;}\n"
                         ".al {background-color: #eaffea;}\n"
+                        ".al th {background-color: #dbffdb;}\n"
                         "</style>\n"
                         "</head>\n"
                         "<body>\n"
@@ -31,8 +37,11 @@ QString removedTemplate = "<tr class=\"rl\"><th align=\"right\" "
 QString commonTemplate
     = "<tr class=\"cl\"><th align=\"right\" width=\"40\">%1</th><th align=\"right\" "
       "width=\"40\">%2</th><td width=\"100%\">%3</td></tr>\n";
-QString commonLinkTemplate = "<tr class=\"cl\"><th width=\"40\"></th><th width=\"40\"></th><td  "
-                             "align=\"center\" width=\"100%\"><a href=\"%1\">︙</a></td></tr>\n";
+QString commonTemplate2
+    = "<tr class=\"cl2\"><th align=\"right\" width=\"40\">%1</th><th align=\"right\" "
+      "width=\"40\">%2</th><td width=\"100%\">%3</td></tr>\n";
+QString commonLinkTemplate = "<tr class=\"cl2\"><th width=\"40\" colspan=\"2\"><a href=\"%1\">&gt;&#x2195;&lt;</a></th><td  "
+                             "align=\"center\" width=\"100%\"</td></tr>\n";
 
 QDiffView::QDiffView(QWidget *parent)
     : QLabel(parent)
@@ -116,59 +125,61 @@ void QDiffView::setSource(const QString &oldString, const QString &newString)
     for (int i = 0; i < this->_diffs.length() - 1; i++) {
         auto oldDiff = this->_diffs[i];
         auto newDiff = this->_diffs[i + 1];
-        if (oldDiff->type != dtl::SES_DELETE || newDiff->type != dtl::SES_ADD) {
-            continue;
-        }
         auto oldString = oldDiff->lines.join('\n');
-        auto newString = newDiff->lines.join('\n');
-        std::vector<QChar> oldChars(oldString.constBegin(), oldString.constEnd());
-        std::vector<QChar> newChars(newString.constBegin(), newString.constEnd());
-        dtl::Diff<QChar> chardiff(oldChars, newChars);
-        chardiff.compose();
-        auto oldlast = dtl::SES_COMMON;
-        auto newlast = dtl::SES_COMMON;
-        QString oldFormatString;
-        QString newFormatString;
-        auto resetIfNeeded = [](dtl::edit_t &last, QString &formatString) {
-            if (last != dtl::SES_COMMON) {
-                formatString.append("</span>");
-                last = dtl::SES_COMMON;
-            }
-        };
-        auto append = [](QString &formatString, QChar ch) {
-            if (ch == ' ') {
-                formatString.append("&nbsp;");
-            } else if (ch == '\t') {
-                formatString.append("&nbsp;&nbsp;&nbsp;&nbsp;");
-            } else {
-                formatString.append(ch);
-            }
-        };
+        if ((oldDiff->type == dtl::SES_DELETE && newDiff->type == dtl::SES_ADD) || (oldDiff->type == dtl::SES_ADD && newDiff->type == dtl::SES_DELETE)) {
+            i++;
+            auto newString = newDiff->lines.join('\n');
+            std::vector<QChar> oldChars(oldString.constBegin(), oldString.constEnd());
+            std::vector<QChar> newChars(newString.constBegin(), newString.constEnd());
+            dtl::Diff<QChar> chardiff(oldChars, newChars);
+            chardiff.compose();
+            auto oldlast = dtl::SES_COMMON;
+            auto newlast = dtl::SES_COMMON;
+            QString oldFormatString;
+            QString newFormatString;
+            auto resetIfNeeded = [](dtl::edit_t &last, QString &formatString) {
+                if (last != dtl::SES_COMMON) {
+                    formatString.append("</span>");
+                    last = dtl::SES_COMMON;
+                }
+            };
+            auto append = [](QString &formatString, QChar ch) {
+                if (ch == ' ') {
+                    formatString.append("&nbsp;");
+                } else if (ch == '\t') {
+                    formatString.append("&nbsp;&nbsp;&nbsp;&nbsp;");
+                } else {
+                    formatString.append(ch);
+                }
+            };
 
-        for (auto ses : chardiff.getSes().getSequence()) {
-            if (ses.second.type == dtl::SES_COMMON) {
-                resetIfNeeded(oldlast, oldFormatString);
-                append(oldFormatString, ses.first);
-                resetIfNeeded(newlast, newFormatString);
-                append(newFormatString, ses.first);
-            } else if (ses.second.type == dtl::SES_DELETE) {
-                if (oldlast != dtl::SES_DELETE) {
-                    oldFormatString.append("<span class=\"rp\">");
-                    oldlast = dtl::SES_DELETE;
+            for (auto ses : chardiff.getSes().getSequence()) {
+                if (ses.second.type == dtl::SES_COMMON) {
+                    resetIfNeeded(oldlast, oldFormatString);
+                    append(oldFormatString, ses.first);
+                    resetIfNeeded(newlast, newFormatString);
+                    append(newFormatString, ses.first);
+                } else if (ses.second.type == dtl::SES_DELETE) {
+                    if (oldlast != dtl::SES_DELETE) {
+                        oldFormatString.append("<span class=\"rp\">");
+                        oldlast = dtl::SES_DELETE;
+                    }
+                    append(oldFormatString, ses.first);
+                } else if (ses.second.type == dtl::SES_ADD) {
+                    if (newlast != dtl::SES_ADD) {
+                        newFormatString.append("<span class=\"ap\">");
+                        newlast = dtl::SES_ADD;
+                    }
+                    append(newFormatString, ses.first);
                 }
-                append(oldFormatString, ses.first);
-            } else if (ses.second.type == dtl::SES_ADD) {
-                if (newlast != dtl::SES_ADD) {
-                    newFormatString.append("<span class=\"ap\">");
-                    newlast = dtl::SES_ADD;
-                }
-                append(newFormatString, ses.first);
             }
+            resetIfNeeded(oldlast, oldFormatString);
+            resetIfNeeded(newlast, newFormatString);
+            oldDiff->lines = oldFormatString.split('\n');
+            newDiff->lines = newFormatString.split('\n');
+        } else {
+            oldDiff->lines = oldString.replace(' ', "&nbsp;").replace('\t', "&nbsp;&nbsp;&nbsp;&nbsp;").split('\n');
         }
-        resetIfNeeded(oldlast, oldFormatString);
-        resetIfNeeded(newlast, newFormatString);
-        oldDiff->lines = oldFormatString.split("\n");
-        newDiff->lines = newFormatString.split("\n");
     }
     this->_update();
 }
@@ -177,8 +188,13 @@ void QDiffView::_update()
 {
     QStringList contents{bodyTemplate1};
     auto dumpCommon = [&](int oldLineNumber, int newLineNumber, const QStringList &commons) {
-        for (auto &line : commons) {
-            contents.append(commonTemplate.arg(oldLineNumber++).arg(newLineNumber++).arg(line));
+        for (int i = 0; i < commons.length(); i++) {
+            auto &line = commons[i];
+            if ((commons.length() > 6) && (2 < i) && (i < commons.length() - 3)) {
+                contents.append(commonTemplate2.arg(oldLineNumber++).arg(newLineNumber++).arg(line));
+            } else {
+                contents.append(commonTemplate.arg(oldLineNumber++).arg(newLineNumber++).arg(line));
+            }
         }
     };
     for (int i = 0; i < this->_diffs.length(); i++) {

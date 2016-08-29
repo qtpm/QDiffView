@@ -4,8 +4,8 @@
 
 QString oldSource = "abc\n" // same
                     "def\n" // removed
-                    "ghi\n"
-                    "jkl\n"
+                    "  ghi\n"
+                    "\tjkl\n"
                     "mno\n" // remove one char insert one char
                     "pqr\n"
                     "stu\n" // remove one char
@@ -22,9 +22,9 @@ QString oldSource = "abc\n" // same
                     "9\n";
 
 QString newSource = "abc\n"
-                    "ghi\n"
+                    "  ghi\n"
                     "123\n" // inserted
-                    "jkl\n"
+                    "\tjkl\n"
                     "no!\n" // remove one char insert one char
                     "pqr\n"
                     "su\n" // remove one char
