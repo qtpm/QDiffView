@@ -6,9 +6,6 @@
 #include <QFontDatabase>
 #include <QMap>
 
-namespace qdiffview
-{
-
 QString bodyTemplate1 = "<html>\n"
                         "<head>\n"
                         "<style>\n"
@@ -93,9 +90,9 @@ void QDiffView::setSource(const QString &oldString, const QString &newString)
 
     for (auto ses : linediff.getSes().getSequence()) {
         //qDebug() << ses.second.type << id2line[ses.first];
-        Diff *diff;
+        qdiffview::Diff *diff;
         if (ses.second.type != last) {
-            diff = new Diff(oldLineNumber, newLineNumber, ses.second.type);
+            diff = new qdiffview::Diff(oldLineNumber, newLineNumber, ses.second.type);
             last = ses.second.type;
             this->_diffs.append(diff);
         } else {
@@ -211,5 +208,4 @@ void QDiffView::_update()
     }
     contents.append(bodyTemplate2);
     this->setText(contents.join(""));
-}
 }

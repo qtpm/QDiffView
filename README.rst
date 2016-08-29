@@ -29,7 +29,7 @@ Example
    {
        QApplication app(argc, argv);
 
-       qdiffview::QDiffView *view = new qdiffview::QDiffView();
+       QDiffView *view = new QDiffView();
        view->setSource(oldSource, newSource);
        view->show();
 
@@ -100,4 +100,6 @@ It uses `Diff template library <https://github.com/cubicdaiya/dtl>`_ by @cubicda
 History
 --------------
 
+* 08/29/2016: Remove namespace(Qt Designer's "Promote To" feature doesn't support namespace).
 * 08/26/2016: First version.
+

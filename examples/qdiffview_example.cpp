@@ -48,7 +48,7 @@ int main(int argc, char **argv)
         app.installTranslator(&translator);
     }
 
-    qdiffview::QDiffView *view = new qdiffview::QDiffView();
+    QDiffView *view = new QDiffView();
     view->setSource(oldSource, newSource);
     view->show();
 

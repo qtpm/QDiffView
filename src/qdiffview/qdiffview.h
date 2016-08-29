@@ -4,8 +4,8 @@
 
 namespace qdiffview
 {
-
 struct Diff;
+}
 
 class QDiffView : public QLabel
 {
@@ -16,7 +16,6 @@ public:
     void setSource(const QString &oldString, const QString &newString);
 
 private:
-    QList<Diff *> _diffs;
+    QList<qdiffview::Diff *> _diffs;
     void _update();
 };
-}
