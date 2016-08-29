@@ -122,20 +122,22 @@ void QDiffView::setSource(const QString &oldString, const QString &newString)
             break;
         }
     }
-
+    bool isLastChanged = false;
     for (int i = 0; i < this->_diffs.length() - 1; i++) {
         auto oldDiff = this->_diffs[i];
         auto newDiff = this->_diffs[i + 1];
         if (oldDiff->type == dtl::SES_ADD && newDiff->type == dtl::SES_DELETE) {
             std::swap(this->_diffs[i], this->_diffs[i + 1]);
             std::swap(oldDiff, newDiff);
-
         }
         auto oldString = oldDiff->lines.join('\n');
         if (oldDiff->type != dtl::SES_DELETE || newDiff->type != dtl::SES_ADD) {
             oldDiff->lines = oldString.replace(' ', "&nbsp;").replace('\t', "&nbsp;&nbsp;&nbsp;&nbsp;").split('\n');
         } else {
             i++;
+            if (i == this->_diffs.length()) {
+                isLastChanged = true;
+            }
             auto newString = newDiff->lines.join('\n');
             std::vector<QChar> oldChars(oldString.constBegin(), oldString.constEnd());
             std::vector<QChar> newChars(newString.constBegin(), newString.constEnd());
@@ -186,6 +188,10 @@ void QDiffView::setSource(const QString &oldString, const QString &newString)
             oldDiff->lines = oldFormatString.split('\n');
             newDiff->lines = newFormatString.split('\n');
         }
+    }
+    if (!isLastChanged) {
+        auto lastLines = this->_diffs.last()->lines.join('\n');
+        this->_diffs.last()->lines = lastLines.replace(' ', "&nbsp;").replace('\t', "&nbsp;&nbsp;&nbsp;&nbsp;").split('\n');
     }
     this->_update();
 }
